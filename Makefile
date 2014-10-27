@@ -146,6 +146,7 @@ SED_PC_CMD = 's|@version@|$(VERSION)|g;		\
 	      s|@includedir@|$(INCLUDEDIR)|g'
 
 
+LINUXSRC=$(wildcard ../linux*)
 
 # Allow users to override build settings without dirtying their trees
 -include local.mk
@@ -198,7 +199,7 @@ compat-cygwin.o: $(LIB_H)
 	$(QUIET_CC)$(CC) -o $@ -c $(ALL_CFLAGS) $<
 
 clean: clean-check
-	rm -f *.[oa] .*.d *.so $(PROGRAMS) $(SLIB_FILE) pre-process.h sparse.pc
+	rm -f *.[oa] .*.d *.so $(PROGRAMS) $(SLIB_FILE) pre-process.h sparse.pc linux-checker.make
 
 dist:
 	@if test "$(SPARSE_VERSION)" != "v$(VERSION)" ; then \
@@ -218,3 +219,12 @@ clean-check:
 	                 -o -name "*.c.error.got" \
 	                 -o -name "*.c.error.diff" \
 	                 \) -exec rm {} \;
+
+linux-save: all linux-checker.make
+	$(MAKE) -f linux-checker.make save
+
+linux-diff: all linux-checker.make
+	$(MAKE) -f linux-checker.make diff
+
+linux-checker.make:
+	python scripts/linux-checker-makefile.py $(LINUXSRC) linux-checker.make
